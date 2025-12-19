@@ -1,47 +1,65 @@
-# Random Forest
-Before going deep into Random Forest lets look at some important topics
+
+
+# Ensemble Models
+
+Before going deep into ensemble models, let us first understand a few important foundational concepts.
 
 ## Bias and Variance
 
-**Bias** is the error that measures how far a model’s predictions are from the true values.
+Bias measures how far a model’s predictions are from the true values.
+- High bias → The model is too simple and fails to capture the underlying patterns in the data. This usually leads to underfitting.
+- Low bias → The model is flexible enough to represent the data more accurately.
 
-- Bias is high -> the model is too simple and fails to capture the underlying patterns in the data. This usually leads to underfitting.
-- Bias is low -> the model is able to represent the data more accurately.
-
-**Variance**  refers to how sensitive a model is to changes in the training dataset.
-
-- When variance is high, the model is too complex and tries to fit every data point in the training set.
-- As a result, even small changes in the training data can cause large changes in the model’s predictions. This typically leads to overfitting.
+Variance refers to how sensitive a model is to changes in the training data.
+- High variance → The model is too complex and attempts to fit every data point in the training set.
+- As a result, even small changes in the training data can lead to large changes in predictions, which typically causes overfitting.
 
 ## Underfitting and Overfitting
 
-**Underfitting** occurs when a model is too simple to capture the underlying patterns in the data.
-- High bias and low variance
-- Performs poorly on both training and test data.
+Underfitting occurs when a model is too simple to capture the underlying structure of the data.
+- Characterized by high bias and low variance
+- Performs poorly on both training and test datasets
 
-**Overfitting** occurs when a model learns noise and details in the training data instead of the actual pattern.
-- Has low bias and high variance
-- Performs very well on training data, but poorly on unseen data.
+Overfitting occurs when a model learns noise and unnecessary details from the training data instead of the true pattern.
+- Characterized by low bias and high variance
+- Performs very well on training data but poorly on unseen data
 
+For a model to be ideal, it should have low bias and low variance. However, in practice, achieving both simultaneously is extremely difficult. This trade-off is one of the key reasons why ensemble models are used.
 
-For a model to be ideal, it should have low bias and low variance. However, in practice, it is not possible to build a model that achieves both simultaneously. This limitation leads to the use of ensemble models.
+## Ensemble Learning
 
-# Ensembles 
-Instead of relying on a single model, ensemble learning involves building multiple models. Some of these models may underfit, while others may overfit. However, when we combine their predictions, typically by averaging or voting, the overall model performance improves. This aggregation helps reduce variance and partially compensate for bias, resulting in better generalization than any individual model.
+Instead of relying on a single model, ensemble learning builds multiple models and combines their predictions.
 
-This is the core idea behind ensemble methods.
+Some models in the ensemble may underfit, while others may overfit. However, when their outputs are combined—typically through averaging (regression) or voting (classification)—the overall performance improves. This aggregation helps reduce variance and can partially compensate for bias, leading to better generalization than any individual model.
 
-Ensmbles is nothing but collection of models.
+In simple terms, an ensemble is a collection of models working together.
 
+Each model in an ensemble should be reasonably good, meaning it should perform better than random guessing (a naive or baseline model). If a model consistently performs worse than the baseline, including it in the ensemble can degrade performance instead of improving it.
 
-But each model in the ensumbles should be acceptable that means it should perform atleast better than base model else it shouldn't be taken.
+Types of Ensemble Methods
 
-There are two popular approaches to ensembling
- - Boosting : XGBoost, AdaBoost, Gradient Boosting etc,.
- - Bagging : Random Forest
+There are two widely used approaches to ensemble learning:
 
-## Boosting
-In this Technique, models were tranined sequentially , where the next model is feed into the outputs of currently model and tries to reduced the error, and the final model will give the actual output
+1. Bagging (Bootstrap Aggregating)
+   - Models are trained independently and in parallel on different bootstrapped samples of the training data.
+   - The final prediction is obtained by averaging (for regression) or majority voting (for classification).
+   - A well-known algorithm based on bagging is Random Forest.
+     <p align="center"> <img src="Images/bagging.webp" alt="Bagging" width="50%"/> </p>
+
+2. Boosting
+   - Models are trained sequentially, where each new model focuses on correcting the errors made by previous models.
+   - More weight is given to misclassified or poorly predicted data points.
+   - Common boosting algorithms include AdaBoost, Gradient Boosting, and XGBoost.
+      <p align="center"> <img src="Images/boosting.webp" alt="Boosting" width="50%"/> </p>
+
+## Bagging
+
+In bagging, multiple bootstrap samples are created from the original training dataset.
+A bootstrap sample is generated by randomly sampling the training data with replacement.
+
+Each bootstrap sample typically contains 40%–70% of the original dataset, with some data points repeated and others left out.This sampling process is called **bootstrapping**.
+
+Using these different bootstrap samples, multiple models are trained independently. One of the most popular algorithms built using this approach is Random Forest, where each model is a decision tree trained on a different bootstrap sample with same set of tree parameters.
 
 
 
