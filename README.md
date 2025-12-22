@@ -333,3 +333,16 @@ Final Precitions
 |  |  |  | **Precision: 0.67** |  | **Precision: 1.00** | **Precision: 1.00** |
 |  |  |  | **Recall: 1.00** |  | **Recall: 0.75** | **Recall: 1.00** ||
 
+### Gradient Boosting
+
+Intuition
+- Gradient Boosting builds ensembles sequentially, but instead of reweighting samples like AdaBoost, each new model is trained to predict the residual errors (the difference between actual and predicted values) of the previous ensemble.
+- The idea is to correct the mistakes of the previous models by minimizing a loss function (e.g., MSE for regression, log loss for classification).
+- Each weak learner contributes to improving the overall prediction in proportion to a learning rate.
+
+<br>
+<p align="center"> <img src="Images/grad.png" alt="Gradient Boosting" width="50%"/> </p>
+<br>
+
+Algorithm
+
