@@ -125,7 +125,9 @@ Intuition
 
 In essence, AdaBoost adapts to errors made in earlier stages and progressively improves model performance by learning from its mistakes.
 
-Algorithm
+<br><br>
+
+### Algorithm
 
 - Inputs
    - Training dataset:
@@ -215,9 +217,13 @@ $$
 H(x) = \sum_{t=1}^{T} \alpha_t h_t(x)  \quad \text{for regression}
 $$
 
+<br><br>
+
+### Classification Example: 
+
 <br>
 
-Example
+
 | Sample $i$ | True Label $y_i$ |
 |--------------|------------------|
 | 1 | +1 |
@@ -333,6 +339,193 @@ Final Precitions
 |  |  |  | **Precision: 0.67** |  | **Precision: 1.00** | **Precision: 1.00** |
 |  |  |  | **Recall: 1.00** |  | **Recall: 0.75** | **Recall: 1.00** ||
 
+<br>
+
+### Regression Example
+
+| Sample $i$ | True Value $y_i$ |
+|------------|------------------|
+| 1 | 3 |
+| 2 | 5 |
+| 3 | 7 |
+| 4 | 9 |
+| 5 | 11 |
+| 6 | 13 |
+
+Let **T = 2**
+
+
+- Step 1: Initial Weights
+
+$$
+D_1(i) = \frac{1}{\text{len(samples)} = 6} = 0.166
+$$
+
+
+   - Build First Weak Regressor $h_1$
+
+| Sample $i$ | True Value $y_i$ | Weights $D_1$ | Prediction $h_1(x_i)$ |
+|------------|------------------|---------------|------------------------|
+| 1 | 3 | 0.166 | 2.5 |
+| 2 | 5 | 0.166 | 4.0 |
+| 3 | 7 | 0.166 | 6.0 |
+| 4 | 9 | 0.166 | 10.5 |
+| 5 | 11 | 0.166 | 10.0 |
+| 6 | 13 | 0.166 | 12.0 |
+
+
+- Step 2: Compute Absolute Errors
+
+$$
+e_i = |y_i - h_1(x_i)|
+$$
+
+| Sample $i$ | True Value $y_i$  | Prediction $h_1(x_i)$ | Absolute Error |
+|------------|------------------|---------------|--------------|
+| 1 | 3  | 2.5 | 0.5 |
+| 2 | 5  | 4.0 | 1.0 |
+| 3 | 7  | 6.0 | 1.0 |
+| 4 | 9  | 10.5 | 1.5 |
+| 5 | 11 | 10.0 | 1.0 |
+| 6 | 13 | 12.0 | 1.0 |
+
+Maximum error:
+
+$$
+e_{\max} = 1.5
+$$
+
+
+- Step 3: Normalized Errors
+
+$$
+e_i^{norm} = \frac{e_i}{e_{\max}}
+$$
+
+| Sample $i$ | Normalized Error |
+|------------|------------------|
+| 1 | 0.33 |
+| 2 | 0.67 |
+| 3 | 0.67 |
+| 4 | 1.00 |
+| 5 | 0.67 |
+| 6 | 0.67 |
+
+---
+
+## Step 4: Weighted Error
+
+$$
+\epsilon_1 = \sum_{i=1}^{m} D_1(i)\, e_i^{norm}
+$$
+
+$$
+\epsilon_1 = 0.166(0.33 + 0.67 + 0.67 + 1.00 + 0.67 + 0.67) = 0.67
+$$
+
+---
+
+## Step 5: Model Weight
+
+$$
+\beta_1 = \frac{\epsilon_1}{1 - \epsilon_1} = \frac{0.67}{0.33} = 2.03
+$$
+
+$$
+\alpha_1 = \ln\left(\frac{1}{\beta_1}\right) = \ln(0.49) \approx -0.71
+$$
+
+---
+
+## Step 6: Update Sample Weights
+
+$$
+D_2(i) = D_1(i) \cdot \beta_1^{(1 - e_i^{norm})}
+$$
+
+| Sample $i$ | Old Weight | Updated Weight | Normalized Weight |
+|------------|------------|----------------|-------------------|
+| 1 | 0.166 | 0.27 | 0.22 |
+| 2 | 0.166 | 0.20 | 0.16 |
+| 3 | 0.166 | 0.20 | 0.16 |
+| 4 | 0.166 | 0.17 | 0.14 |
+| 5 | 0.166 | 0.20 | 0.16 |
+| 6 | 0.166 | 0.20 | 0.16 |
+
+**Interpretation:**  
+- Samples with **larger prediction error receive higher weights**  
+- Next model focuses more on these difficult samples
+
+---
+
+## Build Second Weak Regressor $h_2$
+
+| Sample $i$ | True Value $y_i$ | Normalized Weight | Prediction $h_2(x_i)$ |
+|------------|------------------|-------------------|------------------------|
+| 1 | 3 | 0.22 | 3.1 |
+| 2 | 5 | 0.16 | 5.2 |
+| 3 | 7 | 0.16 | 7.0 |
+| 4 | 9 | 0.14 | 8.8 |
+| 5 | 11 | 0.16 | 11.1 |
+| 6 | 13 | 0.16 | 13.0 |
+
+---
+
+## Step 7: Compute Second Model Error
+
+| Sample $i$ | Absolute Error |
+|------------|----------------|
+| 1 | 0.1 |
+| 2 | 0.2 |
+| 3 | 0.0 |
+| 4 | 0.2 |
+| 5 | 0.1 |
+| 6 | 0.0 |
+
+$$
+\epsilon_2 = 0.13
+$$
+
+---
+
+## Step 8: Second Model Weight
+
+$$
+\beta_2 = \frac{\epsilon_2}{1 - \epsilon_2} = 0.15
+$$
+
+$$
+\alpha_2 = \ln\left(\frac{1}{\beta_2}\right) = 1.90
+$$
+
+---
+
+## Final Prediction
+
+AdaBoost **Regression** combines models using a **weighted median**, not majority voting.
+
+| Sample $i$ | $h_1(x)$ | $h_2(x)$ | Final Prediction |
+|------------|----------|----------|------------------|
+| 1 | 2.5 | 3.1 | 3.1 |
+| 2 | 4.0 | 5.2 | 5.2 |
+| 3 | 6.0 | 7.0 | 7.0 |
+| 4 | 10.5 | 8.8 | 8.8 |
+| 5 | 10.0 | 11.1 | 11.1 |
+| 6 | 12.0 | 13.0 | 13.0 |
+
+---
+
+## Key Difference from Classification
+
+- ❌ No **sign** function  
+- ❌ No majority voting  
+- ✅ Uses **error-weighted median**
+- ✅ Focuses on **reducing large residuals**
+
+---
+
+
+
 ### Gradient Boosting
 
 Intuition
@@ -344,5 +537,232 @@ Intuition
 <p align="center"> <img src="Images/grad.png" alt="Gradient Boosting" width="50%"/> </p>
 <br>
 
+Basic Understanding:
+
+- Inputs
+  - Traning dataset:
+  
+$$
+(x_1, y_1), (x_2, y_2), \dots, (x_n, y_n)
+$$
+
+
+- For whatever the function we want
+
+$$
+\hat{F} = argmin_F \quad E_{x,y}\[L(x, F(x))\]
+$$
+
+here for regression 
+
+$$
+L(x, F(x)) = (y−F(x))^2
+$$
+
+$$
+E_{x,y}\[L(x, F(x))\] ≈ \frac{1}{n}\sum_{i=0}^n L(x_i, F(x_i))
+$$
+
+- Gradient booosting method assumes a real-valued y. It seeks an approximation $\hat{F}(x)$ in the form of a weighted sum of $M$ functions $h_m(x)$ from some class of $H$(weak learners), with $\gamma_m$ weightage at stage $m$ 
+
+$$
+\hat{F}(x) = {\sum_{m=1}^M \gamma_m h_m(x)} + const
+$$
+
+- The method tries to find an approproximation $\hat{F}(x)$ that minimizes thr average value of the loss function on the training set.
+- Thus it does so by starting with a model consisting of a constant function $F_0(x)$, and incrementally expands it in a greedy fashion.
+
+$$
+F_0(x) = argmin_{h_m \in H} \sum_{i=1}^n L(y_i,h_m(x_i))
+$$
+
+$$
+F_m(x) = F_{m-1}(x) + \left(argmin_{h_m \in H}\left[ \sum_{i=1}^n L(y_i,F_{m-1}(x_i)+ h_m(x_i))\right]\right)(x)
+$$
+
+<br>
 Algorithm
+
+- **Inputs:**  
+  Training dataset:  
+
+$$
+(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m) \quad \text{where } x_i \in \mathbb{R}, y_i \in \{-1, +1\}
+$$
+
+- **Step 1: Initialize model**  
+
+$$
+F_0(x) = \arg\min_{\gamma} \sum_{i=1}^m L(y_i, \gamma)
+$$
+
+For binary classification, we can take:
+
+$$
+F_0(x) = 0
+$$
+
+- **Step 2: For $t = 1$ to $T$, repeat:**  
+
+1. **Compute residuals:**  
+
+$$
+r_{i,t} = - \left[ \frac{\partial L(y_i, F(x_i))}{\partial F(x_i)} \right]_{F(x) = F_{t-1}(x)}
+$$
+
+For classification with labels $\{-1, +1\}$ and exponential loss:  
+
+$$
+r_{i,t} = y_i - F_{t-1}(x_i)
+$$
+
+2. **Fit weak learner** $h_t(x)$ to residuals $r_{i,t}$.  
+
+3. **Compute multiplier** $\gamma_t$ by minimizing loss:  
+
+$$
+\gamma_t = \arg\min_{\gamma} \sum_{i=1}^m L(y_i, F_{t-1}(x_i) + \gamma h_t(x_i))
+$$
+
+4. **Update ensemble prediction:**  
+
+$$
+F_t(x) = F_{t-1}(x) + \nu \gamma_t h_t(x)
+$$
+
+where $\nu$ is the learning rate.
+
+- **Step 3: Final prediction**
+
+$$
+H(x_i) = \text{sign}(F_T(x_i))
+$$
+
+
+## Step-by-Step Example
+
+### Training Data
+
+| Sample $i$ | Feature $x_i$ | True Label $y_i$ |
+|------------|----------------|----------------|
+| 1          | 1.0            | +1             |
+| 2          | 2.0            | +1             |
+| 3          | 3.0            | -1             |
+| 4          | 4.0            | +1             |
+| 5          | 5.0            | -1             |
+| 6          | 6.0            | -1             |
+
+- Let $T = 2$ weak learners and learning rate $\nu = 1$ for simplicity.
+
+---
+
+### Step 1: Initialize Model
+
+$$
+F_0(x) = 0
+$$
+
+---
+
+### Step 2: First Weak Learner
+
+- **Residuals:**  
+
+| Sample $i$ | True Label $y_i$ | Residual $r_i$ |
+|------------|-----------------|----------------|
+| 1          | +1              | +1             |
+| 2          | +1              | +1             |
+| 3          | -1              | -1             |
+| 4          | +1              | +1             |
+| 5          | -1              | -1             |
+| 6          | -1              | -1             |
+
+- **Weak learner $h_1(x)$** predictions:  
+
+| Sample $i$ | $h_1(x_i)$ |
+|------------|------------|
+| 1          | +1         |
+| 2          | +1         |
+| 3          | -1         |
+| 4          | +1         |
+| 5          | -1         |
+| 6          | -1         |
+
+- **Multiplier $\gamma_1 = 0.75$**, update prediction:  
+
+$$
+F_1(x_i) = F_0(x_i) + \gamma_1 h_1(x_i)
+$$
+
+| Sample $i$ | $F_1(x_i)$ |
+|------------|------------|
+| 1          | 0.75       |
+| 2          | 0.75       |
+| 3          | -0.75      |
+| 4          | 0.75       |
+| 5          | -0.75      |
+| 6          | -0.75      |
+
+---
+
+### Step 3: Second Weak Learner
+
+- **Residuals:**  
+
+| Sample $i$ | $y_i$ | $F_1(x_i)$ | Residual $r_i = y_i - F_1(x_i)$ |
+|------------|-------|------------|--------------------------------|
+| 1          | +1    | 0.75       | 0.25                           |
+| 2          | +1    | 0.75       | 0.25                           |
+| 3          | -1    | -0.75      | -0.25                          |
+| 4          | +1    | 0.75       | 0.25                           |
+| 5          | -1    | -0.75      | -0.25                          |
+| 6          | -1    | -0.75      | -0.25                          |
+
+- **Weak learner $h_2(x)$** predictions:  
+
+| Sample $i$ | $h_2(x_i)$ |
+|------------|------------|
+| 1          | +1         |
+| 2          | +1         |
+| 3          | -1         |
+| 4          | +1         |
+| 5          | -1         |
+| 6          | -1         |
+
+- **Multiplier $\gamma_2 = 1.22$**, update prediction:  
+
+$$
+F_2(x_i) = F_1(x_i) + \gamma_2 h_2(x_i)
+$$
+
+| Sample $i$ | $F_2(x_i)$ |
+|------------|------------|
+| 1          | 1.97       |
+| 2          | 1.97       |
+| 3          | -1.97      |
+| 4          | 1.97       |
+| 5          | -1.97      |
+| 6          | -1.97      |
+
+---
+
+### Step 4: Final Predictions
+
+$$
+H(x_i) = \text{sign}(F_2(x_i))
+$$
+
+| Sample $i$ | True Label $y_i$ | Final Prediction $H(x_i)$ |
+|------------|-----------------|---------------------------|
+| 1          | +1              | +1                        |
+| 2          | +1              | +1                        |
+| 3          | -1              | -1                        |
+| 4          | +1              | +1                        |
+| 5          | -1              | -1                        |
+| 6          | -1              | -1                        |
+
+**Metrics:**  
+- Accuracy = 100%  
+- Precision = 1.0  
+- Recall = 1.0
 
