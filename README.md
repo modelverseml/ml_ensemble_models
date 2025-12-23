@@ -520,7 +520,7 @@ AdaBoost **Regression** combines models using a **weighted median**, not majorit
 | 6 | 12.0 | 13.0 | -0.71, 1.90 | $\frac{-0.71 * 12.0 + 1.90 * 13.0}{-0.71 + 1.90} \approx 13.6$|
 
 
-
+<br><br>
 
 
 ### Gradient Boosting
@@ -593,12 +593,6 @@ $$
 F_0(x) = \arg\min_{\gamma} \sum_{i=1}^m L(y_i, \gamma)
 $$
 
-For binary classification, we can take:
-
-$$
-F_0(x) = 0
-$$
-
 - **Step 2: For $t = 1$ to $T$, repeat:**  
 
 1. **Compute residuals:**  
@@ -635,131 +629,201 @@ $$
 H(x_i) = \text{sign}(F_T(x_i))
 $$
 
+<br>
 
-## Step-by-Step Example
+## Classification Example
 
-### Training Data
+| Sample $i$ | True Label $y_i$ |
+|------------|-----------------|
+| 1 | +1 |
+| 2 | +1 |
+| 3 | -1 |
+| 4 | +1 |
+| 5 | -1 |
+| 6 | -1 |
 
-| Sample $i$ | Feature $x_i$ | True Label $y_i$ |
-|------------|----------------|----------------|
-| 1          | 1.0            | +1             |
-| 2          | 2.0            | +1             |
-| 3          | 3.0            | -1             |
-| 4          | 4.0            | +1             |
-| 5          | 5.0            | -1             |
-| 6          | 6.0            | -1             |
-
-- Let $T = 2$ weak learners and learning rate $\nu = 1$ for simplicity.
-
----
-
-### Step 1: Initialize Model
-
-$$
-F_0(x) = 0
-$$
+Let **T = 2**, learning rate \( \eta = 0.1 \), initialize \( w = 0, b = 0 \) and feature \( x_i = i \).
 
 ---
 
-### Step 2: First Weak Learner
+### Step 1: Initial Predictions
 
-- **Residuals:**  
-
-| Sample $i$ | True Label $y_i$ | Residual $r_i$ |
-|------------|-----------------|----------------|
-| 1          | +1              | +1             |
-| 2          | +1              | +1             |
-| 3          | -1              | -1             |
-| 4          | +1              | +1             |
-| 5          | -1              | -1             |
-| 6          | -1              | -1             |
-
-- **Weak learner $h_1(x)$** predictions:  
-
-| Sample $i$ | $h_1(x_i)$ |
-|------------|------------|
-| 1          | +1         |
-| 2          | +1         |
-| 3          | -1         |
-| 4          | +1         |
-| 5          | -1         |
-| 6          | -1         |
-
-- **Multiplier $\gamma_1 = 0.75$**, update prediction:  
-
-$$
-F_1(x_i) = F_0(x_i) + \gamma_1 h_1(x_i)
-$$
-
-| Sample $i$ | $F_1(x_i)$ |
-|------------|------------|
-| 1          | 0.75       |
-| 2          | 0.75       |
-| 3          | -0.75      |
-| 4          | 0.75       |
-| 5          | -0.75      |
-| 6          | -0.75      |
+| Sample $i$ | $x_i$ | True Label $y_i$ | Prediction $\hat{y_i} = w x_i + b$ |
+|------------|-------|-----------------|------------------------|
+| 1 | 1 | +1 | 0 |
+| 2 | 2 | +1 | 0 |
+| 3 | 3 | -1 | 0 |
+| 4 | 4 | +1 | 0 |
+| 5 | 5 | -1 | 0 |
+| 6 | 6 | -1 | 0 |
 
 ---
 
-### Step 3: Second Weak Learner
-
-- **Residuals:**  
-
-| Sample $i$ | $y_i$ | $F_1(x_i)$ | Residual $r_i = y_i - F_1(x_i)$ |
-|------------|-------|------------|--------------------------------|
-| 1          | +1    | 0.75       | 0.25                           |
-| 2          | +1    | 0.75       | 0.25                           |
-| 3          | -1    | -0.75      | -0.25                          |
-| 4          | +1    | 0.75       | 0.25                           |
-| 5          | -1    | -0.75      | -0.25                          |
-| 6          | -1    | -0.75      | -0.25                          |
-
-- **Weak learner $h_2(x)$** predictions:  
-
-| Sample $i$ | $h_2(x_i)$ |
-|------------|------------|
-| 1          | +1         |
-| 2          | +1         |
-| 3          | -1         |
-| 4          | +1         |
-| 5          | -1         |
-| 6          | -1         |
-
-- **Multiplier $\gamma_2 = 1.22$**, update prediction:  
+### Step 2: Compute Gradients
 
 $$
-F_2(x_i) = F_1(x_i) + \gamma_2 h_2(x_i)
+\frac{\partial L}{\partial w} = -\frac{2}{m} \sum x_i (y_i - \hat{y_i}) = -2.0
 $$
 
-| Sample $i$ | $F_2(x_i)$ |
-|------------|------------|
-| 1          | 1.97       |
-| 2          | 1.97       |
-| 3          | -1.97      |
-| 4          | 1.97       |
-| 5          | -1.97      |
-| 6          | -1.97      |
+$$
+\frac{\partial L}{\partial b} = -\frac{2}{m} \sum (y_i - \hat{y_i}) = -0.33
+$$
 
 ---
 
-### Step 4: Final Predictions
+### Step 3: Update Parameters
 
 $$
-H(x_i) = \text{sign}(F_2(x_i))
+w \leftarrow w - \eta \frac{\partial L}{\partial w} = 0.2
+$$  
+
+$$
+b \leftarrow b - \eta \frac{\partial L}{\partial b} = 0.033
 $$
 
-| Sample $i$ | True Label $y_i$ | Final Prediction $H(x_i)$ |
-|------------|-----------------|---------------------------|
-| 1          | +1              | +1                        |
-| 2          | +1              | +1                        |
-| 3          | -1              | -1                        |
-| 4          | +1              | +1                        |
-| 5          | -1              | -1                        |
-| 6          | -1              | -1                        |
+---
 
-**Metrics:**  
-- Accuracy = 100%  
-- Precision = 1.0  
-- Recall = 1.0
+### Step 4: Updated Predictions
 
+| Sample $i$ | True Label $y_i$ | $\hat{y_i}$ | Predicted Class |
+|------------|-----------------|-------------|----------------|
+| 1 | +1 | 0.233 | +1 |
+| 2 | +1 | 0.433 | +1 |
+| 3 | -1 | 0.633 | +1 |
+| 4 | +1 | 0.833 | +1 |
+| 5 | -1 | 1.033 | +1 |
+| 6 | -1 | 1.233 | +1 |
+
+**Interpretation:**  
+- Positive samples are predicted correctly.  
+- Negative samples are misclassified.  
+- Another gradient step is required to reduce the loss.
+
+---
+
+### Step 5: Second Iteration Gradients
+
+$$
+\frac{\partial L}{\partial w} = -\frac{2}{m} \sum x_i (y_i - \hat{y_i}) = -1.6
+$$
+
+$$
+\frac{\partial L}{\partial b} = -\frac{2}{m} \sum (y_i - \hat{y_i}) = -0.66
+$$
+
+---
+
+### Step 6: Update Parameters
+
+$$
+w \leftarrow w - \eta \frac{\partial L}{\partial w} = 0.36
+$$  
+
+$$
+b \leftarrow b - \eta \frac{\partial L}{\partial b} = 0.099
+$$
+
+---
+
+### Step 7: Predictions After 2 Iterations
+
+| Sample $i$ | True Label $y_i$ | $\hat{y_i}$ | Predicted Class |
+|------------|-----------------|-------------|----------------|
+| 1 | +1 | 0.459 | +1 |
+| 2 | +1 | 0.819 | +1 |
+| 3 | -1 | 1.179 | +1 |
+| 4 | +1 | 1.539 | +1 |
+| 5 | -1 | 1.899 | +1 |
+| 6 | -1 | 2.259 | +1 |
+
+**Interpretation:**  
+- Gradient descent iteratively reduces classification error.  
+- More iterations with adjusted learning rate will eventually classify negatives correctly.
+
+---
+
+## Regression Example
+
+| Sample $i$ | True Value $y_i$ |
+|------------|-----------------|
+| 1 | 3 |
+| 2 | 5 |
+| 3 | 7 |
+| 4 | 9 |
+| 5 | 11 |
+| 6 | 13 |
+
+Let **T = 2**, learning rate \( \eta = 0.01 \), initialize \( w = 0, b = 0 \) and feature \( x_i = i \).
+
+---
+
+### Step 1: Initial Predictions and Errors
+
+| Sample $i$ | True Value $y_i$ | $\hat{y_i}$ | Error $e_i = y_i - \hat{y_i}$ |
+|------------|-----------------|-------------|-------------------------------|
+| 1 | 3  | 0  | 3  |
+| 2 | 5  | 0  | 5  |
+| 3 | 7  | 0  | 7  |
+| 4 | 9  | 0  | 9  |
+| 5 | 11 | 0  | 11 |
+| 6 | 13 | 0  | 13 |
+
+---
+
+### Step 2: Compute Gradients
+
+$$
+\frac{\partial L}{\partial w} = -\frac{2}{m} \sum x_i (y_i - \hat{y_i}) = -66
+$$
+
+$$
+\frac{\partial L}{\partial b} = -\frac{2}{m} \sum (y_i - \hat{y_i}) = -16
+$$
+
+---
+
+### Step 3: Update Parameters
+
+$$
+w \leftarrow w - \eta \frac{\partial L}{\partial w} = 0.66
+$$  
+
+$$
+b \leftarrow b - \eta \frac{\partial L}{\partial b} = 0.16
+$$
+
+---
+
+### Step 4: Updated Predictions
+
+| Sample $i$ | True Value $y_i$ | $\hat{y_i}$ |
+|------------|-----------------|-------------|
+| 1 | 3  | 0.82  |
+| 2 | 5  | 2.14  |
+| 3 | 7  | 3.46  |
+| 4 | 9  | 4.78  |
+| 5 | 11 | 6.10  |
+| 6 | 13 | 7.42  |
+
+**Interpretation:**  
+- Gradient descent gradually minimizes error.  
+- More iterations bring $\hat{y_i}$ closer to true $y_i$.
+
+---
+
+### Step 5: Converged Predictions
+
+| Sample $i$ | True Value $y_i$ | $\hat{y_i}$ |
+|------------|-----------------|-------------|
+| 1 | 3  | 3  |
+| 2 | 5  | 5  |
+| 3 | 7  | 7  |
+| 4 | 9  | 9  |
+| 5 | 11 | 11 |
+| 6 | 13 | 13 |
+
+**Metrics:** MSE = 0, MAE = 0  
+
+**Interpretation:**  
+- Gradient descent successfully optimized parameters \( w, b \) to minimize regression loss.  
+- Final predictions match true values exactly.
