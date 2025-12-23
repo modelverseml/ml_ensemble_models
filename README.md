@@ -759,7 +759,7 @@ $$
 
 <br><br>
 
-## Regression Example
+### Regression Example
 
 | Sample $i$ | True Value $y_i$ |
 |------------|-----------------|
@@ -770,11 +770,9 @@ $$
 | 5 | 11 |
 | 6 | 13 |
 
-Let **T = 3**, learning rate \( \eta = 0.5 \), initialize \( F_0(x) = 0 \).
+Let **T = 3**, learning rate $\eta = 0.5$, initialize $F_0(x) = 0$.
 
----
-
-### Step 1: First Tree \( h_1 \)
+-  Step 1: First Tree $h_1$
 
 | Sample $i$ | Residual $r_i = y_i - F_0(x_i)$ | $h_1(x_i)$ |
 |------------|---------------------------------|------------|
@@ -800,9 +798,7 @@ $$
 | 5 | 5.5 |
 | 6 | 6.5 |
 
----
-
-### Step 2: Second Tree \( h_2 \)
+- Second Tree $h_2$
 
 Residuals:
 
@@ -819,7 +815,7 @@ $$
 | 5 | 11 | 5.5 | 5.5 |
 | 6 | 13 | 6.5 | 6.5 |
 
-Tree predicts residuals \( h_2(x_i) = r_i \)  
+Tree predicts residuals $h_2(x_i) = r_i$
 
 Update ensemble:
 
@@ -836,9 +832,7 @@ $$
 | 5 | 11.0 |
 | 6 | 13.0 |
 
----
-
-### Step 3: Third Tree \( h_3 \)
+- Third Tree $h_3$
 
 Residuals:
 
@@ -848,9 +842,8 @@ $$
 
 Tree predicts 0. Ensemble stays same.
 
----
 
-### Final Prediction
+Final Prediction
 
 | Sample $i$ | True Value $y_i$ | $F_3(x_i)$ |
 |------------|-----------------|------------|
@@ -862,3 +855,178 @@ Tree predicts 0. Ensemble stays same.
 | 6 | 13 | 13 |
 
 **Metrics:** MSE = 0, MAE = 0
+
+<br><br>
+
+### XGBoost (Extreme Gradient Boosting)
+
+Intuition
+- XGBoost is an advanced implementation of Gradient Boosting that builds trees sequentially to correct the errors of previous trees.
+- It uses gradient descent to minimize a differentiable loss function (e.g., mean squared error for regression, log loss for classification).
+- Adds **regularization** to prevent overfitting and supports advanced features like column subsampling, handling missing values, and parallelized tree construction.
+- Each tree tries to reduce the **residual errors** from all previous trees.
+- Final prediction is the sum of predictions from all trees, weighted by the learning rate.
+
+<p align="center"> <img src="Images/xgboost.webp" alt="XGBoost" width="50%"/> </p>
+
+In essence, XGBoost improves Gradient Boosting by regularizing trees, optimizing tree construction, and efficiently handling large datasets.
+
+<br><br>
+
+### Algorithm
+
+- **Inputs**
+  - Training dataset:
+
+$$
+(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m) \quad where \quad x_i \in \mathbb{R}^n, \quad y_i \in \mathbb{R} \text{ (regression) or } \{-1, +1\} \text{ (classification)}
+$$
+
+- Initialize Prediction**
+
+$$
+F_0(x) = \arg\min_\gamma \sum_{i=1}^{m} L(y_i, \gamma)
+$$
+
+- For regression with squared loss: $F_0 = \text{mean}(y_i)$
+
+- For t = 1 to T, repeat:**
+   - Compute **residuals (pseudo-residuals)**:
+  
+$$
+  r_i^{(t)} = -\left[ \frac{\partial L(y_i, F_{t-1}(x_i))}{\partial F_{t-1}(x_i)} \right]
+$$
+  
+   - Fit a regression tree $h_t(x)$ to residuals $r_i^{(t)}$
+   - Compute **leaf weights** $\gamma_j$ to minimize regularized loss:
+  
+$$
+\gamma_j = \arg\min_\gamma \sum_{i \in leaf_j} L(y_i, F_{t-1}(x_i) + \gamma) + \Omega(h_t)
+$$
+
+$$
+\Omega(h_t) = \gamma T + \frac{1}{2}\lambda \sum_j w_j^2
+$$
+
+   - Update predictions:
+  
+$$
+F_t(x) = F_{t-1}(x) + \eta h_t(x)
+$$
+
+  where $\eta$ is the learning rate.
+
+- Final Prediction**
+  - Regression: $\hat{y} = F_T(x)$ 
+  - Classification (binary): $\hat{y} = \text{sign}(F_T(x))$
+  - Classification (multiclass): apply softmax to $F_T(x)$
+
+<br><br>
+
+### Classification Example (Binary)
+
+| Sample $i$ | True Label $y_i$ |
+|------------|-----------------|
+| 1 | +1 |
+| 2 | +1 |
+| 3 | -1 |
+| 4 | +1 |
+| 5 | -1 |
+| 6 | -1 |
+
+Let **T = 2**, learning rate $\eta = 0.5$
+
+**Step 1: Initial Prediction**
+$$
+F_0 = 0
+$$
+
+**Step 2: First Tree $h_1$**
+
+| Sample $i$ | True Label $y_i$ | Residual $r_i^{(1)}$ | Prediction $h_1(x_i)$ | Updated Prediction $F_1 = F_0 + \eta h_1(x_i)$ |
+|------------|-----------------|----------------------|----------------------|-----------------------------------------------|
+| 1 | +1 | 1 | +1 | 0.5 |
+| 2 | +1 | 1 | +1 | 0.5 |
+| 3 | -1 | -1 | -1 | -0.5 |
+| 4 | +1 | 1 | +1 | 0.5 |
+| 5 | -1 | -1 | -1 | -0.5 |
+| 6 | -1 | -1 | -1 | -0.5 |
+
+**Step 3: Second Tree $h_2$**
+
+Compute new residuals:  
+
+$$
+r_i^{(2)} = y_i - F_1(x_i)
+$$
+
+| Sample $i$ | Residual $r_i^{(2)}$ | Prediction $h_2(x_i)$ | Updated Prediction $F_2 = F_1 + \eta h_2(x_i)$ |
+|------------|----------------------|----------------------|-----------------------------------------------|
+| 1 | 0.5 | +1 | 1.0 |
+| 2 | 0.5 | +1 | 1.0 |
+| 3 | -0.5 | -1 | -1.0 |
+| 4 | 0.5 | +1 | 1.0 |
+| 5 | -0.5 | -1 | -1.0 |
+| 6 | -0.5 | -1 | -1.0 |
+
+**Final Prediction** $\hat{y} = \text{sign}(F_2)$
+
+| Sample $i$ | True Label | Final Prediction |
+|------------|-----------|----------------|
+| 1 | +1 | +1 |
+| 2 | +1 | +1 |
+| 3 | -1 | -1 |
+| 4 | +1 | +1 |
+| 5 | -1 | -1 |
+| 6 | -1 | -1 |
+
+**Metrics:** Accuracy = 1.0, Precision = 1.0, Recall = 1.0
+
+<br>
+
+### Regression Example
+
+| Sample $i$ | True Value $y_i$ |
+|------------|-----------------|
+| 1 | 3 |
+| 2 | 5 |
+| 3 | 7 |
+| 4 | 9 |
+| 5 | 11 |
+| 6 | 13 |
+
+**Step 1: Initial Prediction**
+$$
+F_0 = \text{mean}(y_i) = 8
+$$
+
+**Step 2: First Tree $h_1$**
+
+| Sample $i$ | Residual $r_i^{(1)} = y_i - F_0$ | Prediction $h_1(x_i)$ | Updated Prediction $F_1 = F_0 + \eta h_1(x_i)$ |
+|------------|---------------------------------|----------------------|-----------------------------------------------|
+| 1 | -5 | -4 | 6 |
+| 2 | -3 | -3 | 5 |
+| 3 | -1 | -1 | 7 |
+| 4 | 1 | 1 | 9 |
+| 5 | 3 | 3 | 11 |
+| 6 | 5 | 5 | 13 |
+
+**Step 3: Second Tree $h_2$**
+
+| Sample $i$ | Residual $r_i^{(2)} = y_i - F_1$ | Prediction $h_2(x_i)$ | Updated Prediction $F_2 = F_1 + \eta h_2(x_i)$ |
+|------------|---------------------------------|----------------------|-----------------------------------------------|
+| 1 | -3 | -2 | 4 |
+| 2 | -1 | -1 | 4 |
+| 3 | 0 | 0 | 7 |
+| 4 | 0 | 0 | 9 |
+| 5 | 0 | 0 | 11 |
+| 6 | 0 | 0 | 13 |
+
+**Final Predictions:** $F_2(x) = [4, 4, 7, 9, 11, 13]$
+
+- XGBoost effectively reduces residuals in each iteration  
+- Learning rate \( \eta \) controls contribution of each tree  
+- Regularization ensures that trees don’t overfit
+
+<br><br>
+
